@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block header %}
+Dashboard Results
+{% endblock %}
+
+{% block content %}
+    <ul class="list-group">
+        <li class="list-group-item">
+            <a data-toggle="collapse" href="#dnsCacheMonitor" role="button" aria-expanded="false" aria-controls="dnsCacheMonitor">
+                DNS Cache Monitor
+            </a>
+            <div class="collapse" id="dnsCacheMonitor">
+                <div class="card card-body">
+                    <!-- Dynamically render DNS logs -->
+                    {% if DnsData %}
+                        <ul>
+                            {% for log in DnsData %}
+                                <h5 class="mt-3 log-header">Issue #{{ loop.index }}</h5>
+                                <li class="list-group-item">
+                                    <!-- Date & Time Collapse -->
+                                    <a data-toggle="collapse" href="#datetime-{{ loop.index }}" role="button" aria-expanded="false" aria-controls="datetime-{{ loop.index }}">
+                                        <strong>Date & Time</strong>
+                                    </a>
+                                    <div class="collapse" id="datetime-{{ loop.index }}">
+                                        <div class="card card-body">
+                                            {{ log[0] }}
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <!-- IP Address Collapse -->
+                                    <a data-toggle="collapse" href="#ip-{{ loop.index }}" role="button" aria-expanded="false" aria-controls="ip-{{ loop.index }}">
+                                        <strong>IP Address</strong>
+                                    </a>
+                                    <div class="collapse" id="ip-{{ loop.index }}">
+                                        <div class="card card-body">
+                                            {{ log[1] }}
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <!-- Extra Data Collapse -->
+                                    <a data-toggle="collapse" href="#extraData-{{ loop.index }}" role="button" aria-expanded="false" aria-controls="extraData-{{ loop.index }}">
+                                        <strong>Extra Data</strong>
+                                    </a>
+                                    <div class="collapse" id="extraData-{{ loop.index }}">
+                                        <div class="card card-body">
+                                            {% for line in log[2] %}
+                                                {{line}}
+                                                <br>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No logs available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </li>
+        <li class="list-group-item">
+            <a data-toggle="collapse" href="#fileIntegrityMonitor" role="button" aria-expanded="false" aria-controls="fileIntegrityMonitor">
+                File Integrity Monitor
+            </a>
+            <div class="collapse" id="fileIntegrityMonitor">
+                <div class="card card-body">
+ 
+                    {% if FileData %}
+                        <ul>
+                            {% for log in FileData %}
+                                <h5 class="mt-3 log-header">Issue #{{ loop.index }}</h5>
+                                <li class="list-group-item">
+            
+                                    <a data-toggle="collapse" href="#datetime2-{{ loop.index }}" role="button" aria-expanded="false" aria-controls="datetime2-{{ loop.index }}">
+                                        <strong>Date & Time</strong>
+                                    </a>
+                                    <div class="collapse" id="datetime2-{{ loop.index }}">
+                                        <div class="card card-body">
+                                            {{ log[0] }}
+                                        </div>
+                                    </div>
+                                    <br>
+           
+                                    <a data-toggle="collapse" href="#statement-{{ loop.index }}" role="button" aria-expanded="false" aria-controls="statement-{{ loop.index }}">
+                                        <strong>Statement</strong>
+                                    </a>
+                                    <div class="collapse" id="statement-{{ loop.index }}">
+                                        <div class="card card-body">
+                                            {{ log[1] }}
+                                        </div>
+                                    </div>           
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No logs available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </li>
+        <li class="list-group-item">
+            <a data-toggle="collapse" href="#processMonitor" role="button" aria-expanded="false" aria-controls="processMonitor">
+                Process Monitor
+            </a>
+            <div class="collapse" id="processMonitor">
+                <div class="card card-body">
+
+                    {% if ProcessData %}
+                        <ul>
+                            {% for log in ProcessData %}
+                                <h5 class="mt-3 log-header">Issue #{{ loop.index }}</h5>
+                                <li class="list-group-item">
+
+                                    <a data-toggle="collapse" href="#datetime3-{{ loop.index }}" role="button" aria-expanded="false" aria-controls="datetime3-{{ loop.index }}">
+                                        <strong>Date & Time</strong>
+                                    </a>
+                                    <div class="collapse" id="datetime3-{{ loop.index }}">
+                                        <div class="card card-body">
+                                            {{ log[0] }}
+                                        </div>
+                                    </div>
+                                    <br>
+                                    
+                                    <a data-toggle="collapse" href="#info-{{ loop.index }}" role="button" aria-expanded="false" aria-controls="info-{{ loop.index }}">
+                                        <strong>Info</strong>
+                                    </a>
+                                    <div class="collapse" id="info-{{ loop.index }}">
+                                        <div class="card card-body">
+                                            {{ log[1] }}
+                                        </div>
+                                    </div>   
+                                    <br>
+                                    <a data-toggle="collapse" href="#hash-{{ loop.index }}" role="button" aria-expanded="false" aria-controls="hash-{{ loop.index }}">
+                                        <strong>Executable Hash</strong>
+                                    </a>
+                                    <div class="collapse" id="hash-{{ loop.index }}">
+                                        <div class="card card-body">
+                                            {{ log[2] }}
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <a data-toggle="collapse" href="#yara-{{ loop.index }}" role="button" aria-expanded="false" aria-controls="yara-{{ loop.index }}">
+                                        <strong>YARA Patterns/Signatures</strong>
+                                    </a>
+                                    <div class="collapse" id="yara-{{ loop.index }}">
+                                        <div class="card card-body">
+                                            {{ log[3] }}
+                                        </div>
+                                    </div>
+                                    <br>
+                                    <a data-toggle="collapse" href="#ai-{{ loop.index }}" role="button" aria-expanded="false" aria-controls="ai-{{ loop.index }}">
+                                        <strong>AI Analysis</strong>
+                                    </a>
+                                    <div class="collapse" id="ai-{{ loop.index }}">
+                                        <div class="card card-body">
+                                            {{ log[4] }}
+                                        </div>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <p>No logs available.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </li>
+    </ul>
+{% endblock %}

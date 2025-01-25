@@ -1,5 +1,7 @@
 .env
 venv/
+*.json
+*.pyc
 
 # Logs
 logs
