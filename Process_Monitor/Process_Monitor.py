@@ -58,7 +58,6 @@ def get_process_paths(os, smart):
                 processes.update({process.info['name']: exe_path})
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             pass
-    print(processes)
     return processes
 
 def get_launch_agents_daemons():
@@ -114,24 +113,12 @@ def virustotal_query(hash, logger, process, path):
 
 def collect(os, smart):
     processes = get_process_paths(os, smart)
-    tested = 0 #REMOVE
     logger = create_logger()
     for process, path in processes.items():
-        #REMOVE
-        hash = ""
-        if tested == 0:
-            hash = "f934a8404562686e617283e32c37f30f83aa27994bc0dfe0fe61012376f421fd"
-            tested +=1
-        elif tested == 1:
-            hash = "ffd7ee02f86e6273b0fa916677a257769cb8f2b2afa451a2b739fa62a7cfc33c"
-            tested+=1
-        else:
-            #CONTINUE
-            hash = get_file_hash(path)
+        hash = get_file_hash(path)
         virustotal_query(hash, logger, process, path)
     if os == "m":
         launch_daemons = get_launch_agents_daemons()
-        print(launch_daemons)
         for path in launch_daemons:
             hash = get_file_hash(path)
             virustotal_query(hash, logger, "Launch Daemon", path)

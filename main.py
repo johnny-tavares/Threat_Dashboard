@@ -1,22 +1,20 @@
 from File_Integrity_Monitor import File_Monitor
 from Process_Monitor import Process_Monitor
+from Network_Monitor import Network_Monitor
 import argparse
-from flask import Flask, render_template
+from flask import Flask, render_template, request
+import os
+import threading
+import time
 
+'''Turn off dnsmasq when done'''
 
 '''Test on windows'''
+
+
 def parse_arguments():
     parser = argparse.ArgumentParser(
         description="A threat dashboard script to monitor processes and files."
-    )
-
-    # OS flag: -o (w for Windows, m for Mac)
-    parser.add_argument(
-        "-o",
-        "--os",
-        choices=["w", "m"],
-        required=True,
-        help="Specify the operating system: 'w' for Windows or 'm' for macOS.",
     )
 
     # Smart process detection flag: -s
@@ -24,7 +22,7 @@ def parse_arguments():
         "-s",
         "--smart",
         action="store_true",
-        help="Enable smart process detection if SDK is installed",
+        help="Enable smart process detection",
     )
 
     # Positional arguments for files to monitor
@@ -34,27 +32,40 @@ def parse_arguments():
         help="List of files to monitor. Provide file paths separated by spaces.",
     )
 
+    parser.add_argument(
+        "--dns_log_path",
+        required=True, 
+        help="Path to the dnsmasq/other dns log file.",
+    )
+
     # Parse the arguments
     args = parser.parse_args()
     return args
 
 args = parse_arguments()
 
-#if args.os == "w":
-    #DNS_Monitor.job()
-#DNS_Monitor.job()
+name = os.name
+operating_system = ""
+if name == "nt":
+    operating_system = "w"
+elif name == "posix":
+    operating_system = "m"
+
 File_Monitor.job(args.files)
-Process_Monitor.job(args.os, args.smart)
+Process_Monitor.job(operating_system, args.smart)
 
 dns_data = []
 file_data = []
 process_data = []
 
-
+last_position = 0
+dns_data_lock = threading.Lock()
 def read_log(log_name):
+    global last_position
     try:
         with open(log_name, 'r') as f:
             if log_name == "malicious_ips.log":
+                f.seek(last_position)
                 while True:
                     first_line = f.readline().strip()
                     second_line = f.readline().strip()
@@ -65,12 +76,14 @@ def read_log(log_name):
                     remaining_lines = []
                     while True:
                         line = f.readline().strip()
-                        if not line:  # Stop if a blank line or EOF is encountered
+                        if not line: 
                             break
                         remaining_lines.append(line)
 
-                    dns_data.append([first_line, second_line, remaining_lines])
+                    with dns_data_lock:
+                        dns_data.append([first_line, second_line, remaining_lines])
 
+                last_position = f.tell()
             elif log_name == "file_change.log":
                 while True:
                     datetime = f.readline().strip()
@@ -95,12 +108,31 @@ def read_log(log_name):
     except FileNotFoundError:
         pass
 
-read_log("malicious_ips.log")
 read_log("file_change.log")
 read_log("suspicious_processes.log")
-app = Flask(__name__)
-@app.route("/")
-def home():
-    return render_template("index.html", DnsData=dns_data, FileData=file_data, ProcessData=process_data)
+
+def start_log_monitor():
+    while True:
+        read_log("malicious_ips.log")
+        time.sleep(5)
+
+def start_network_monitor():
+    Network_Monitor.job(operating_system, args.dns_log_path)
+
+
 if __name__ == "__main__":
-    app.run()
+    network_thread = threading.Thread(target=start_network_monitor)
+    network_thread.daemon = True
+    network_thread.start()
+
+    log_thread = threading.Thread(target=start_log_monitor)
+    log_thread.daemon = True  
+    log_thread.start()
+
+    app = Flask(__name__)
+
+    @app.route("/", methods=['GET'])
+    def home():
+        return render_template("index.html", DnsData=dns_data, FileData=file_data, ProcessData=process_data)
+
+    app.run(threaded=True)

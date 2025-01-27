@@ -25,7 +25,6 @@ def file_fingerprint(path):
 
 #Logs when a difference in fingerprints is detected, and checks for other errors too
 def monitor_files(files):
-    print(files)
     logger = create_logger()
     for file in files:
         try:
