@@ -4,7 +4,8 @@ The Threat Dashboard is a proof-of-concept application designed to monitor and l
 
 1. **File Integrity Monitor**: Tracks changes to specified files and detects potential tampering.
 2. **Process Monitor**: Analyzes running processes, including inactive launch daemons, and verifies their authenticity.
-3. **Network Monitor**: Monitors DNS queries to identify potentially malicious activity.
+3. **Network Monitor**: Analyzes DNS replies to identify potentially malicious activity.
+
 
 This project serves as a foundational tool for threat monitoring and is built with extensibility in mind for future developments like full automation, real-time web hosting, and enhanced threat detection capabilities.
 
@@ -138,7 +139,7 @@ Ensure you run the script with elevated privileges to access system-level logs a
 
 ---
 
-## Interesting Benefits
+## Interesting/Extra Benefits
 
 1. **File Integrity Monitor**:
    - Reads files in binary, bypassing unreliable timestamp-based monitoring.
@@ -146,7 +147,8 @@ Ensure you run the script with elevated privileges to access system-level logs a
 2. **Process Monitor**:
    - Analyzes inactive launch daemons, offering insights into potentially malicious processes that may only run periodically.
 3. **Network Monitoring**:
-   - Using dnsmasq provides more control over DNS queries, making it easier to log and monitor activity on macOS.
+   - In my research, macOS doesn't make it easy to directly access or manage the DNS cache, and it doesn't store DNS queries in a log that you can easily access. By using dnsmasq, you gain more control over the DNS queries, allowing you to log and monitor them more easily, which is why it's a good choice for this project.
+
 
 ---
 
