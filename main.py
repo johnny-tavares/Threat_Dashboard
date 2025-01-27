@@ -7,9 +7,6 @@ import os
 import threading
 import time
 
-'''Turn off dnsmasq when done'''
-
-'''Test on windows'''
 
 
 def parse_arguments():
