@@ -95,7 +95,7 @@ Ensure you run the script with elevated privileges to access system-level logs a
 
 ### Network Monitor
 
-- Logs DNS queries for greater control and visibility.
+- Logs DNS responses that are malicious according to VirusTotal
 - Addresses macOS limitations in accessing the DNS cache directly.
 - **Improvements**:
   - Implement safer storage for the IP whitelist.
