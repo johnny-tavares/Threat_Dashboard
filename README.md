@@ -7,7 +7,7 @@ The Threat Dashboard is a proof-of-concept application designed to monitor and l
 3. **Network Monitor**: Analyzes DNS replies to identify potentially malicious activity.
 
 
-This project serves as a foundational tool for threat monitoring and is built with extensibility in mind for future developments like full automation, real-time web hosting, and enhanced threat detection capabilities.
+This project serves as a foundational tool for threat monitoring and is built with extensibility in mind for future developments like full automation, real-time web hosting, and enhanced threat detection capabilities. Note that testing was done with MacOS Big Sur(11.7.10), and results may vary depending on the operating system versions. 
 
 ---
 
