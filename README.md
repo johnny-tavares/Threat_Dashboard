@@ -9,6 +9,11 @@ The Threat Dashboard is a proof-of-concept application designed to monitor and l
 
 This project serves as a foundational tool for threat monitoring and is built with extensibility in mind for future developments like full automation, real-time web hosting, and enhanced threat detection capabilities. Note that testing was done with MacOS Big Sur(11.7.10), and results may vary depending on the operating system versions. 
 
+## Images
+!(https://raw.githubusercontent.com/Jtavare3/Threat_Dashboard/refs/heads/master/Screen%20Shot%202025-01-26%20at%209.44.14%20PM.png)
+!(https://raw.githubusercontent.com/Jtavare3/Threat_Dashboard/refs/heads/master/Screen%20Shot%202025-01-26%20at%209.44.30%20PM.png)
+!(https://raw.githubusercontent.com/Jtavare3/Threat_Dashboard/refs/heads/master/Screen%20Shot%202025-01-26%20at%209.40.53%20PM.png)
+
 ---
 
 ## Requirements
