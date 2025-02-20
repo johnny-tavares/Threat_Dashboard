@@ -31,7 +31,6 @@ def parse_arguments():
 
     parser.add_argument(
         "--dns_log_path",
-        required=True, 
         help="Path to the dnsmasq/other dns log file.",
     )
 
@@ -49,7 +48,7 @@ elif name == "posix":
     operating_system = "m"
 
 File_Monitor.job(args.files)
-Process_Monitor.job(operating_system, args.smart)
+#Process_Monitor.job(operating_system, args.smart)
 
 dns_data = []
 file_data = []

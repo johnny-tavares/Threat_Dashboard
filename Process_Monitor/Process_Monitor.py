@@ -5,6 +5,7 @@ import requests
 import os
 from dotenv import load_dotenv
 import subprocess
+import glob
 
 def create_logger():
     suspicious_logger = logging.getLogger("suspicious_processes")
@@ -22,9 +23,14 @@ def create_logger():
 
 def is_signed_by_windows(exe_path):
     try:
-        result = subprocess.run(["signtool", "verify", "/pa", exe_path],
+        # Run PowerShell to get the signature status of the process
+        result = subprocess.run(["powershell", "-Command", f"Get-AuthenticodeSignature '{exe_path}'"],
                                 capture_output=True, text=True)
-        return "Successfully verified" in result.stdout
+        # Check if the signature is valid
+        if "Valid" in result.stdout:
+            return True
+        else:
+            return False
     except Exception:
         return False
 
@@ -51,7 +57,7 @@ def get_process_paths(os, smart):
                     if not is_signed_by_apple(exe_path):
                         processes.update({process.info['name']: exe_path})
                 if os == "w":
-                    if not is_signed_by_windows():
+                    if not is_signed_by_windows(exe_path):
                         print(process.info['name'], exe_path)
                         processes.update({process.info['name']: exe_path})
             else:
@@ -59,6 +65,11 @@ def get_process_paths(os, smart):
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             pass
     return processes
+
+def get_windows_startups():
+    startup_folder = os.path.join(os.getenv('APPDATA'), 'Microsoft\\Windows\\Start Menu\\Programs\\Startup')
+
+    return glob.glob(os.path.join(startup_folder, "*"))
 
 def get_launch_agents_daemons():
     filepaths = []
@@ -79,9 +90,13 @@ def get_launch_agents_daemons():
     return filepaths
 
 def get_file_hash(filepath):
-    with open(filepath, "rb") as f:
-        file_hash = hashlib.sha256(f.read()).hexdigest()
-    return file_hash
+    try:
+        with open(filepath, "rb") as f:
+            file_hash = hashlib.sha256(f.read()).hexdigest()
+        return file_hash
+    except Exception as e:
+        print(f"Error reading file {filepath}: {e}")
+        return None
 
 load_dotenv()
 API_KEY = os.getenv("API_KEY")
@@ -116,12 +131,18 @@ def collect(os, smart):
     logger = create_logger()
     for process, path in processes.items():
         hash = get_file_hash(path)
-        virustotal_query(hash, logger, process, path)
+        if hash:
+            virustotal_query(hash, logger, process, path)
     if os == "m":
         launch_daemons = get_launch_agents_daemons()
         for path in launch_daemons:
             hash = get_file_hash(path)
             virustotal_query(hash, logger, "Launch Daemon", path)
+    if os == "w":
+        startup_files = get_windows_startups()
+        for path in startup_files:
+            hash = get_file_hash(path)
+            virustotal_query(hash, logger, "Startup process", path)
     
 
 def job(os, smart):

@@ -7,6 +7,7 @@ import re
 import socket
 import time
 import atexit
+from scapy.all import sniff, IP, DNS, conf
 
 whitelisted_ips = set()
 
@@ -91,11 +92,24 @@ def validate_ip(ip_address):
 
 def virustotal_query(ip, logger):
     if ip not in whitelisted_ips:
+        print(f"Checking: {ip}")
         result = IP_Filter(IP_Lookup(get_api(), ip))
         if result is not None:
             log_flaggedIP(logger, ip, result[0], result[1])
         elif result is None:
             store_ip_to_file(ip)
+
+def read_dns_windows():
+    logger = create_logger()
+
+    def packet_callback(packet):
+        if packet.haslayer(DNS) and packet.haslayer(IP) and packet[DNS].qr == 1:
+  
+            dns_server_ip = packet[IP].src
+            if validate_ip(dns_server_ip):
+                virustotal_query(dns_server_ip, logger)
+    #iface gets adjusted to computer's primary network interface
+    sniff(iface = "Intel(R) Wi-Fi 6 AX200 160MHz", filter="port 53", prn=packet_callback, store=0)
 
 def read_dns_mac(dnsmasq_log_path):
     logger = create_logger()
@@ -114,13 +128,16 @@ def read_dns_mac(dnsmasq_log_path):
                 time.sleep(5)
 
 
+
 def job(os, dns_log_path):
-    with open(dns_log_path, "w") as file:
-        file.truncate(0)
+    load_ips_from_file()
     if os == "m":
-        load_ips_from_file()
+        with open(dns_log_path, "w") as file:
+            file.truncate(0)
         command = ["sudo", "brew", "services", "restart", "dnsmasq"]
         subprocess.run(command, check=True)
         read_dns_mac(dns_log_path)
-    
+    if os == "w":
+        #print(conf.ifaces)
+        read_dns_windows()
 

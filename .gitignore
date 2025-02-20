@@ -2,7 +2,7 @@
 venv/
 *.json
 *.pyc
-
+*.txt
 # Logs
 logs
 *.log
