@@ -21,12 +21,6 @@ This project serves as a foundational tool for threat monitoring and is built wi
 ### Prerequisites
 
 1. **Python**: Ensure you have Python 3 installed on your system.
-2. **Windows SDK** (for process signature verification on Windows):
-   - This script uses `signtool` to verify if an executable is signed by Microsoft or other trusted authorities.
-   - To install:
-     1. Download the Windows SDK from the [official website](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/).
-     2. During installation, select the **Signing Tools for Desktop Apps** feature.
-     3. After installation, add the SDK's `bin` directory to your system's PATH or provide the full path to `signtool.exe` in the script.
 
 ### Environment Variables
 
@@ -94,7 +88,7 @@ Ensure you run the script with elevated privileges to access system-level logs a
 ### Process Monitor
 
 - Analyzes running processes and retrieves launch daemons (including inactive ones).
-- Uses `signtool` (Windows) or `codesign` (macOS) to verify the authenticity of executables.
+- Uses Powershell's authentication (Windows) or `codesign` (macOS) to verify the authenticity of executables.
 - **Improvements**:
   - Enhance detection criteria to identify suspicious processes beyond threat database checks.
 
