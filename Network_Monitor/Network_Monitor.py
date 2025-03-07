@@ -7,7 +7,11 @@ import re
 import socket
 import time
 import atexit
-from scapy.all import sniff, IP, DNS, conf
+from scapy.all import sniff, IP, DNS, conf, DNSRR
+from typing import Set, Optional, Dict
+import json
+import threading
+from queue import Queue
 
 whitelisted_ips = set()
 
@@ -91,8 +95,8 @@ def validate_ip(ip_address):
     return False
 
 def virustotal_query(ip, logger):
+    print(f"Checking ip: {ip}")
     if ip not in whitelisted_ips:
-        print(f"Checking: {ip}")
         result = IP_Filter(IP_Lookup(get_api(), ip))
         if result is not None:
             log_flaggedIP(logger, ip, result[0], result[1])
@@ -101,15 +105,68 @@ def virustotal_query(ip, logger):
 
 def read_dns_windows():
     logger = create_logger()
+    stop_threads = threading.Event()
+
+    def extract_dns_info(packet) -> Optional[Dict]:
+        if not (packet.haslayer(DNS) and packet.haslayer(IP)):
+            return None
+
+        dns_info = {
+            'query_ip': packet[IP].src,
+            'response_ip': packet[IP].dst,
+            'answers': []
+        }
+
+        for i in range(packet[DNS].ancount):
+            rr = packet[DNS].an[i]
+            if rr.type == 1:
+                dns_info['answers'].append(rr.rdata)
+
+        return dns_info
 
     def packet_callback(packet):
-        if packet.haslayer(DNS) and packet.haslayer(IP) and packet[DNS].qr == 1:
-  
-            dns_server_ip = packet[IP].src
-            if validate_ip(dns_server_ip):
-                virustotal_query(dns_server_ip, logger)
-    #iface gets adjusted to computer's primary network interface
-    sniff(iface = "Intel(R) Wi-Fi 6 AX200 160MHz", filter="port 53", prn=packet_callback, store=0)
+        if packet.haslayer(DNS) and packet[DNS].qr == 1:
+            dns_info = extract_dns_info(packet)
+            if dns_info:
+                all_ips = {dns_info['query_ip'], dns_info['response_ip']}
+                all_ips.update(ip for ip in dns_info['answers'] if validate_ip(str(ip)))
+                
+                for ip in all_ips:
+                    if validate_ip(str(ip)):
+                        virustotal_query(str(ip), logger)
+
+    def sniff_interface(iface):
+        try:
+            sniff(iface=iface, 
+                  filter="port 53", 
+                  prn=packet_callback, 
+                  store=0,
+                  stop_filter=lambda _: stop_threads.is_set())
+        except Exception:
+            pass
+
+    interfaces = [iface for iface in conf.ifaces.data.keys() 
+                 if isinstance(iface, str) and 
+                 'Loopback' not in iface and 
+                 '\\Device\\NPF_' in iface]
+    
+    if not interfaces:
+        return
+
+    threads = []
+    for iface in interfaces:
+        thread = threading.Thread(target=sniff_interface, args=(iface,))
+        thread.daemon = True
+        thread.start()
+        threads.append(thread)
+
+    try:
+        while True:
+            time.sleep(30)
+    except KeyboardInterrupt:
+        stop_threads.set()
+        for thread in threads:
+            thread.join(timeout=1)
 
 def read_dns_mac(dnsmasq_log_path):
     logger = create_logger()
@@ -138,6 +195,5 @@ def job(os, dns_log_path):
         subprocess.run(command, check=True)
         read_dns_mac(dns_log_path)
     if os == "w":
-        #print(conf.ifaces)
         read_dns_windows()
 
