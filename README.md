@@ -44,6 +44,11 @@ This project serves as a foundational tool for threat monitoring and is built wi
 2. Configure your system to use dnsmasq for DNS queries. Update your system DNS settings to point to the local dnsmasq instance.
 3. Specify the log directory for dnsmasq in the script configuration.
 
+### npcap Setup (If not using dnsmasq)
+
+In order to monitor the network, the Scapy library requires npcap to be downloaded.
+Once installed, ensure that Npcap is running to allow Scapy to capture and send network packets.
+
 ### Running the Baseline Script
 
 Before running the main monitoring script, you must establish a baseline for tracking.  Go into the File\_Integrity\_Monitor directory. Run the following command:
@@ -66,7 +71,7 @@ Run the main script with the following syntax:
 sudo python3 main.py --smart files_to_track... --dns_log_path path_to_dns_log
 ```
 
-- `--smart`: Enables smarter file tracking. Exclude this flag if running on Windows without the SDK.
+- `--smart`: Enables smarter file tracking.
 - `files_to_track`: List of files or directories to monitor.
 - `--dns_log_path`: Path to the directory where dnsmasq or Windows logs DNS queries.
 
